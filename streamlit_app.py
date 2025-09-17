@@ -4,6 +4,7 @@ import requests
 from geopy.distance import geodesic
 from datetime import datetime, timedelta
 import pandas as pd
+import time
 
 # --- Weather API ---
 def fetch_weather(lat, lon):
@@ -79,22 +80,28 @@ tourist = {
     "last_gps_signal_location": None
 }
 
-# --- Button to Run Monitoring ---
-if st.button("Check Tourist Status"):
-    weather_data = fetch_weather(*tourist["current_location"])
-    anomalies_detected = detect_anomalies(tourist, weather_data)
+# --- Button to Run Monitoring in cycles ---
+if st.button("Run Monitoring"):
+    st.write(f"⏰ Monitoring started at {datetime.now().strftime('%H:%M:%S')}")
 
-    st.subheader(f"👤 Tourist {tourist['tourist_id']}")
-    st.write("📍 Current Location:", tourist["current_location"])
-    st.json(weather_data)
+    for cycle in range(10):  # simulate 3 monitoring cycles
+        st.subheader(f" Cycle {cycle+1}")
 
-    if anomalies_detected:
-        st.error("⚠️ Anomalies Detected:")
-        for issue in anomalies_detected:
-            st.write(" -", issue)
-    else:
-        st.success("✅ No anomalies detected. Tourist is safe.")
+        weather_data = fetch_weather(*tourist["current_location"])
+        anomalies_detected = detect_anomalies(tourist, weather_data)
 
-    # Show location on map
-    df = pd.DataFrame([[lat, lon]], columns=["lat", "lon"])
-    st.map(df, zoom=12)
+        st.write(f"👤 Tourist {tourist['tourist_id']} | Location: {tourist['current_location']}")
+        st.json(weather_data)
+
+        if anomalies_detected:
+            st.error("⚠️ Anomalies Detected:")
+            for issue in anomalies_detected:
+                st.write(" -", issue)
+        else:
+            st.success("✅ No anomalies detected. Tourist is safe.")
+
+        # Show location on map
+        df = pd.DataFrame([[lat, lon]], columns=["lat", "lon"])
+        st.map(df, zoom=12)
+
+        time.sleep(5)  # wait before next cycle
